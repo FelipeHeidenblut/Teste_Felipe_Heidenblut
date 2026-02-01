@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Operadoras ANS - Teste</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+    th, td { border: 1px solid #ccc; padding: 4px 8px; font-size: 12px; }
+    th { background: #f5f5f5; }
+    .pagination button { margin: 2px; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <h2>Operadoras (paginado)</h2>
+
+    <div>
+      <input v-model="search" placeholder="Buscar por razão social ou CNPJ" @keyup.enter="carregarOperadoras(1)" />
+      <button @click="carregarOperadoras(1)">Buscar</button>
+    </div>
+
+    <table v-if="operadoras.length">
+      <thead>
+        <tr>
+          <th>CNPJ</th>
+          <th>Razão Social</th>
+          <th>UF</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="op in operadoras" :key="op.CNPJ + '-' + op.UF">
+          <td>{{ op.CNPJ }}</td>
+          <td>{{ op.RazaoSocial }}</td>
+          <td>{{ op.UF }}</td>
+          <td><button @click="verDetalhes(op.CNPJ)">Detalhes</button></td>
+        </tr>
+      </tbody>
+    </table>
+    <p v-else>Nenhuma operadora encontrada.</p>
+
+    <div class="pagination">
+      <button :disabled="page <= 1" @click="carregarOperadoras(page - 1)">Anterior</button>
+      <span>Página {{ page }}</span>
+      <button :disabled="page * limit >= total" @click="carregarOperadoras(page + 1)">Próxima</button>
+    </div>
+
+    <hr />
+
+    <div v-if="detalhe">
+      <h3>Detalhes da Operadora</h3>
+      <p><b>CNPJ:</b> {{ detalhe.CNPJ }}</p>
+      <p><b>Razão Social:</b> {{ detalhe.RazaoSocial }}</p>
+      <p><b>Modalidade:</b> {{ detalhe.Modalidade }}</p>
+      <p><b>UF:</b> {{ detalhe.UF }}</p>
+
+      <h4>Histórico de Despesas</h4>
+      <table v-if="historico.length">
+        <thead>
+          <tr>
+            <th>Ano</th>
+            <th>Trimestre</th>
+            <th>Valor Despesas</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="h in historico" :key="h.Ano + '-' + h.Trimestre">
+            <td>{{ h.Ano }}</td>
+            <td>{{ h.Trimestre }}</td>
+            <td>{{ h.ValorDespesas_num.toFixed(2) }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <p v-else>Nenhum dado de despesas encontrado.</p>
+    </div>
+
+    <hr />
+
+    <div>
+      <h2>Estatísticas gerais</h2>
+      <button @click="carregarEstatisticas">Atualizar estatísticas</button>
+
+      <div v-if="estatisticas">
+        <p><b>Total de despesas:</b> {{ estatisticas.total_despesas.toFixed(2) }}</p>
+        <p><b>Média de despesas:</b> {{ estatisticas.media_despesas.toFixed(2) }}</p>
+
+        <h4>Top 5 operadoras</h4>
+        <table>
+          <thead>
+            <tr>
+              <th>CNPJ</th>
+              <th>Razão Social</th>
+              <th>Total Despesas</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="op in estatisticas.top5_operadoras" :key="op.CNPJ">
+              <td>{{ op.CNPJ }}</td>
+              <td>{{ op.RazaoSocial }}</td>
+              <td>{{ op.TotalDespesas.toFixed(2) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
